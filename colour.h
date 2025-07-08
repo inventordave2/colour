@@ -17,6 +17,8 @@ typedef struct Colour	{
 	char* (*fmt)( char* in );
 	const char* codes[256];
 
+
+	const char* setcodevalues( int c, int v, ... );
 	void (*reset)();
 	void (*bg)( uint8_t cc );
 	void (*fg)( uint8_t cc );
@@ -31,6 +33,7 @@ typedef struct Colour	{
 	void (*clear)();
 	void (*cls)();
 	void (*nl)();
+	
 
 	void (*fixpos)(void);
 
@@ -90,5 +93,17 @@ extern const char BG_BRIGHT_CYAN[8];
 extern const char BG_BRIGHT_WHITE[8];
 
 extern const char NORMAL[8];
+
+extern const char BOLD[8];
+extern const char ITALIC[8];
+extern const char UNDERLINE[8];
+extern const char STRIKETHROUGH[8];
+
+extern const char COLOUR[16]; // Allows a palette of 256 colours, 0 to 255.
+extern const char RGB_FG[32];
+extern const char RGB_BG[32];
+
+extern const char DELETE[8];
+
 
 #endif

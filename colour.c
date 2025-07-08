@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "./colour.h"
+#define COLOUR_MAX_CODES_COUNT 256
 
 const struct Colour colour;
 
@@ -46,6 +47,7 @@ const char BG_BRIGHT_WHITE[8];
 
 const char NORMAL[8];
 
+static const unsigned _reset_;
 static const unsigned _black_;
 static const unsigned _red_;
 static const unsigned _green_;
@@ -55,6 +57,7 @@ static const unsigned _magenta_;
 static const unsigned _cyan_;
 static const unsigned _white_;
 
+static const unsigned _bright_;
 
 static void reset();
 static void bg( uint8_t cc );
@@ -98,7 +101,7 @@ static char* getANSIVTSeq( char* str )	{
 
 	char** codes = colour.codes;
 	
-	if( b )
+	if( bg )
 		codes += 15;
 	
 	if( !strcmp( str,"white" ) )
@@ -263,6 +266,27 @@ static char* fmt( char* in )	{
 	}
 }
 
+static const char* setcodevalues( int c, int v, ... )	{
+
+	va_arg vargs;
+	va_list vlist;
+	
+	char* _ = (char*)calloc( 64, 1 );
+	
+	/*
+		Those codestrings that support user-defined values have a string-qualifier at ech location where a replacement number can be inserted.
+		The ANSI char '%'might be a good, being free as it is under the ANSI/VT specification, marker for inserting a value. SOme codepoints take
+		Hexadecimal, some decimal.
+		
+		Perhaps "%%" might indicate that the value is required to be Hexadecimal. Then, a single '%', "%", could indicate Decaimal.
+		Perhaps 'R', 'G', 'B'might indicate the components of an RGB colourspace.
+	*/
+	
+	return (const char*) _;
+}
+
+
+
 static const unsigned resetAnsiVtCodes(unsigned f)	{
 	
 	if(f == 0)	{
@@ -374,6 +398,7 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 	_white_ = x;
 	codes[x++] = FG_WHITE;
 
+	_bright_ = x;
 	codes[x++] = FG_BRIGHT_BLACK;
 	codes[x++] = FG_BRIGHT_RED;
 	codes[x++] = FG_BRIGHT_GREEN;
@@ -401,10 +426,11 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 	codes[x++] = BG_BRIGHT_CYAN;
 	codes[x++] = BG_BRIGHT_WHITE;
 	
+	_reset_ = x;
 	codes[x++] = NORMAL;
 	
 	unsigned y = x;
-	for( ; y < 256; y++ )
+	for( ; y < COLOUR_MAX_CODES_COUNT; y++ )
 		codes[y] = NULL;
 
 	if( f==0 )
