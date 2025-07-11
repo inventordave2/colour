@@ -3,6 +3,7 @@
 #ifndef DAVELIB_COLOUR
 #define DAVELIB_COLOUR
 
+#include <stdint.h>
 /*
 The Colour Library Interface.
 
@@ -12,12 +13,12 @@ colour.fmt( char* ); // Pass in a ColourLib-formatted string, and this member fu
 */
 typedef struct Colour	{
 
-	const char ansivt;
+	char ansivt;
 
 	char* (*fmt)( char* in );
 	const char* codes[256];
 
-	const char* setcodevalues( int c, int v, ... );
+	char* (*setcodevalues)( int c, int v, ... );
 	void (*reset)();
 	void (*bg)( uint8_t cc );
 	void (*fg)( uint8_t cc );
@@ -42,13 +43,13 @@ typedef struct Colour	{
 An instance of the Colour Library Interface.
 Initialised by InitColour().
 */
-extern const struct Colour colour;
+extern struct Colour* colour;
 
 /*
 The only public (non-interface-wrapped) function to the Colour Library.
 Must be called before the Colour Interface can be used, as the Init function initialises the Library runtime requirements.
 */
-void InitColour();
+extern void InitColour();
 
 /*
 These are global copies of the strings representing the ANSI/VT control code sequences.
