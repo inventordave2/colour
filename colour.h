@@ -17,7 +17,6 @@ typedef struct Colour	{
 	char* (*fmt)( char* in );
 	const char* codes[256];
 
-
 	const char* setcodevalues( int c, int v, ... );
 	void (*reset)();
 	void (*bg)( uint8_t cc );

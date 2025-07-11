@@ -83,51 +83,47 @@ static char* getANSIVTSeq( char* str )	{
 		return (char*)NORMAL;
 
 	
-	char* prefix[4];
-	
-	prefix[0] = str[0];
-	prefix[1] = str[1];
-	prefix[2] = str[2];
-	prefix[3] = '\0';
-	
 	uint8_t fb = 0;
 	uint8_t f = 0;
 	uint8_t bg = 0;
 	
+	char** codes = colour.codes;
 	
 	if( !strcmp( prefix,"fg:" ) || bg=!strcmp( prefix,"bg:" ) )
 		str += 3;
 	
-
-	char** codes = colour.codes;
+	char ch = str[6];
+	str[6] = '\0';
+	if( !strcmp( str,"bright" ) )
+		codes += 7, str += 6;
 	
+	str[6] = ch;
 	if( bg )
 		codes += 15;
 	
 	if( !strcmp( str,"white" ) )
-		return (char*) codes+_white_;
+		return (char*) *codes+_white_;
 
 	if( !strcmp( str,"red" ) )
-		return (char*) codes+_red_;
+		return (char*) *codes+_red_;
 	
 	if( !strcmp( str,"blue" ) )
-		return (char*) codes+_blue_;
+		return (char*) *codes+_blue_;
 	
 	if( !strcmp( str,"green" ) )
-		return (char*) codes+_green_;
+		return (char*) *codes+_green_;
 	
 	if( !strcmp( str,"yellow" ) )
-		return (char*) codes+_yellow_;
-	
-	
+		return (char*) *codes+_yellow_;
+
 	if( !strcmp( str,"magenta" ) )
-		return (char*) codes+_magenta_;
+		return (char*) *codes+_magenta_;
 
 	if( !strcmp( str,"cyan" ) )
-		return (char*) codes+_cyan_;
+		return (char*) *codes+_cyan_;
 	
 	if( !strcmp( str,"black" ) )
-		return (char*) codes+_black_;
+		return (char*) *codes+_black_;
 }
 
 void InitColour()	{
@@ -197,53 +193,54 @@ static char* fmt( char* in )	{
 
 				case '[':
 					
+					strcat( out, "[" );
 					x++;
-					char _[200] = { 0 };
-					
-					char ch;
-					while( (ch=in[x]) != ']' && ch!='\0' )	{
-						
-						_[y] = ch;
-						x++;
-						y++;
-					}
-					
-					
-					char* entry = (char*)calloc( 32, 1 );
-					char* entry_copy;
-					
-					y = 0;
-					
-					loop:
-					
-					entry_copy = entry;
-					while( (ch=_[y]) != ',' && ch != '\0' )
-						*entry_copy = ch, y++, entry_copy++;
-					
-					*entry_copy = '\0';
-					
-					seq[z] = getANSIVTSeq( entry );
-
-					z++;
-					if( z == 10 || ch == '\0' )
-						escaped = 0, break;
-				
-					// Arriving here heavily implies that 'ch' contains a comma ','
-					y++;
-					
-					goto loop;
-			
-					// codegraph never gets here, but if I edit this case block, they may come into control-flow scope at that point.
-					escaped = 0;
 					break;
 				
 				default:
-					
 					break;
 			}
 			
 			escaped = 0;
 		}
+		else	{
+			
+
+			x++;
+			char _[200] = { 0 };
+			
+			char ch;
+			while( (ch=in[x]) != ']' && ch!='\0' )	{
+				
+				_[y] = ch;
+				x++;
+				y++;
+			}
+			
+			char* entry = (char*)calloc( 32, 1 );
+			char* entry_copy;
+			
+			y = 0;
+			
+			loop:
+			
+			entry_copy = entry;
+			while( (ch=_[y]) != ',' && ch != '\0' )
+				*entry_copy = ch, y++, entry_copy++;
+			
+			*entry_copy = '\0';
+			
+			seq[z] = getANSIVTSeq( entry );
+
+			z++;
+			if( ch == ',' )
+				y++, goto loop;
+			
+			free( entry );
+			
+		}
+		
+		
 		
 		if( z>0 )	{
 			

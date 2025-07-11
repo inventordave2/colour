@@ -1,5 +1,15 @@
+# Colour Lib Makefile
 
-colorconsole: ansivt2.c ansivt2.h
-	gcc -c ansivt2.c  -o cc.o
+compiler=gcc
+debug=-g -DDEBUG
+
+colour: colour.c colour.h
+	$(compiler) -c colour.c -o colour.o
+
+colourd: colour.c colour.h
+	$(compiler) -c colour.c -O0 $(debug) -o colourd.o
+
+all: colour
+
 
 		
