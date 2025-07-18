@@ -97,11 +97,11 @@ the Windows default beep (but only if it's not already playing).
 [L	insert one blank line
 [#L	insert # blank lines
 
-[M	delete one line
-[#M	delete # lines
+[M	DEL one line
+[#M	DEL # lines
 
-[P	delete one character
-[#P	delete # characters
+[P	DEL one character
+[#P	DEL # characters
 
 [@	insert one blank character
 [#@	insert # blank characters

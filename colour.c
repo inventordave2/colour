@@ -1,64 +1,70 @@
 // COLOUR_C
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
+
+#if
+#include <windows.h>
 #include "./colour.h"
 #define COLOUR_MAX_CODES_COUNT 256
 
-const struct Colour colour;
+struct Colour* colour;
 
-const unsigned ansivt;
+unsigned _black_;
+unsigned _red_;
+unsigned _green_;
+unsigned _blue_;
+unsigned _yellow_;
+unsigned _magenta_;
+unsigned _cyan_;
+unsigned _white_;
+unsigned _bright_;
+unsigned _reset_;
 
-const char FG_BLACK[8];
-const char FG_RED[8];
-const char FG_GREEN[8];
-const char FG_YELLOW[8];
-const char FG_BLUE[8];
-const char FG_MAGENTA[8];
-const char FG_CYAN[8];
-const char FG_WHITE[8];
+char FG_BLACK[8];
+char FG_RED[8];
+char FG_GREEN[8];
+char FG_YELLOW[8];
+char FG_BLUE[8];
+char FG_MAGENTA[8];
+char FG_CYAN[8];
+char FG_WHITE[8];
 
-const char FG_BRIGHT_BLACK[8];
-const char FG_BRIGHT_RED[8];
-const char FG_BRIGHT_GREEN[8];
-const char FG_BRIGHT_YELLOW[8];
-const char FG_BRIGHT_BLUE[8];
-const char FG_BRIGHT_MAGENTA[8];
-const char FG_BRIGHT_CYAN[8];
-const char FG_BRIGHT_WHITE[8];
+char FG_BRIGHT_BLACK[8];
+char FG_BRIGHT_RED[8];
+char FG_BRIGHT_GREEN[8];
+char FG_BRIGHT_YELLOW[8];
+char FG_BRIGHT_BLUE[8];
+char FG_BRIGHT_MAGENTA[8];
+char FG_BRIGHT_CYAN[8];
+char FG_BRIGHT_WHITE[8];
 
-const char BG_BLACK[8];
-const char BG_RED[8];
-const char BG_GREEN[8];
-const char BG_YELLOW[8];
-const char BG_BLUE[8];
-const char BG_MAGENTA[8];
-const char BG_CYAN[8];
-const char BG_WHITE[8];
+char BG_BLACK[8];
+char BG_RED[8];
+char BG_GREEN[8];
+char BG_YELLOW[8];
+char BG_BLUE[8];
+char BG_MAGENTA[8];
+char BG_CYAN[8];
+char BG_WHITE[8];
 
-const char BG_BRIGHT_BLACK[8];
-const char BG_BRIGHT_RED[8];
-const char BG_BRIGHT_GREEN[8];
-const char BG_BRIGHT_YELLOW[8];
-const char BG_BRIGHT_BLUE[8];
-const char BG_BRIGHT_MAGENTA[8];
-const char BG_BRIGHT_CYAN[8];
-const char BG_BRIGHT_WHITE[8];
+char BG_BRIGHT_BLACK[8];
+char BG_BRIGHT_RED[8];
+char BG_BRIGHT_GREEN[8];
+char BG_BRIGHT_YELLOW[8];
+char BG_BRIGHT_BLUE[8];
+char BG_BRIGHT_MAGENTA[8];
+char BG_BRIGHT_CYAN[8];
+char BG_BRIGHT_WHITE[8];
 
-const char NORMAL[8];
+char NORMAL[8];
 
-static const unsigned _reset_;
-static const unsigned _black_;
-static const unsigned _red_;
-static const unsigned _green_;
-static const unsigned _blue_;
-static const unsigned _yellow_;
-static const unsigned _magenta_;
-static const unsigned _cyan_;
-static const unsigned _white_;
+static char** codes;
 
-static const unsigned _bright_;
 
+static const unsigned resetAnsiVtCodes(unsigned f);
 static void reset();
 static void bg( uint8_t cc );
 static void fg( uint8_t cc );
@@ -74,142 +80,218 @@ static void fixpos();
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
 
+static void reset()	{}
+static void bg( uint8_t cc ) {}
+static void fg( uint8_t cc ) {}
+static void bold() {}
+static void up( int h ) {}
+static void down( int h ) {}
+static void left( int d ) {}
+static void right( int d ) {}
+static void clear() {}
+static void nl() {}
+static void fixpos() {}
 
-static char* codes[256];
+
+/*
+Some Windows configs require a manual invocation of VT processing.
+*/
+
+static HANDLE StdHandle;
+
+#ifndef STD_OUTPUT_HANDLE
+#define STD_OUTPUT_HANDLE ((DWORD)-11)
+#endif
+
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+
+static BOOL color_win32_vt;
+
+int win32_color()	{
+
+	StdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	
+	color_win32_vt = SetConsoleMode(
+		StdHandle,
+		0x0001 | 0x0002 | ENABLE_VIRTUAL_TERMINAL_PROCESSING
+	);
+
+	
+	//fprintf( stderr, "ResponseCode(SetConsoleMode) := '%s'.\n", (color == 0 ? "FAIL" : "SUCCESS") );
+
+	if(color_win32_vt == 0)
+		fprintf( stderr, "ANSIVT mode could not be activated in this Win32 process.\n" );
+
+	return (int) color_win32_vt;	
+}
 
 static char* getANSIVTSeq( char* str )	{
 
 	if( !strcmp( str,"reset" ) )
 		return (char*)NORMAL;
 
+	char prefix[4];
+	prefix[0] = str[0];
+	prefix[1] = str[1];
+	prefix[2] = str[2];
+	
+	prefix[3] = '\0';
 	
 	uint8_t fb = 0;
 	uint8_t f = 0;
 	uint8_t bg = 0;
 	
-	char** codes = colour.codes;
+	const char** codes = colour->codes;
+	char ch;
+	ch = str[6];
+	str[6] = '\0';
 	
-	if( !strcmp( prefix,"fg:" ) || bg=!strcmp( prefix,"bg:" ) )
+	if( !strcmp( prefix,"fg:" ) || (bg=(!strcmp( prefix,"bg:" ))) )
 		str += 3;
 	
-	char ch = str[6];
-	str[6] = '\0';
 	if( !strcmp( str,"bright" ) )
-		codes += 7, str += 6;
+		codes += _bright_, str += 7;
 	
 	str[6] = ch;
+	
 	if( bg )
 		codes += 15;
 	
 	if( !strcmp( str,"white" ) )
-		return (char*) *codes+_white_;
+		return (char*) codes[_white_];
 
 	if( !strcmp( str,"red" ) )
-		return (char*) *codes+_red_;
+		return (char*) codes[_red_];
 	
 	if( !strcmp( str,"blue" ) )
-		return (char*) *codes+_blue_;
+		return (char*) codes[_blue_];
 	
 	if( !strcmp( str,"green" ) )
-		return (char*) *codes+_green_;
+		return (char*) codes[_green_];
 	
 	if( !strcmp( str,"yellow" ) )
-		return (char*) *codes+_yellow_;
+		return (char*) codes[_yellow_];
 
 	if( !strcmp( str,"magenta" ) )
-		return (char*) *codes+_magenta_;
+		return (char*) codes[_magenta_];
 
 	if( !strcmp( str,"cyan" ) )
-		return (char*) *codes+_cyan_;
+		return (char*) codes[_cyan_];
 	
 	if( !strcmp( str,"black" ) )
-		return (char*) *codes+_black_;
+		return (char*) codes[_black_];
 }
+
 
 void InitColour()	{
 	
+	codes = (char**)calloc( 256, sizeof(char*) );
+	
 	const unsigned r = resetAnsiVtCodes( 1 );
 	
-	if( r==0 )
-		fprintf( stderr, "The Colour Library was unable to initialise the ANSI VT code table!\n" ), return;
+	if( r==0 )	{
+		
+		fprintf( stderr, "The Colour Library was unable to initialise the ANSI VT code table!\n" );
+		return;
+	}
 	
-	colour.codes = (const char**) codes;
+	uint8_t r2 = (uint8_t) win32_color();
+	printf( "Win32 VT Mode was %sactivated.\n", (r2==1?"":"not ") );
+	
+	colour = (struct Colour*) malloc( sizeof( struct Colour ) );
+	
+	colour->codes = (const char**) codes;
 
-	colour.reset = reset;
-	colour.bg = bg;
-	colour.fg = fg;
-	colour.bold = bold;
-	colour.b = bold;
-	colour.up = up;
-	coulour.down = down;
-	colour.left = left;
-	colour.bwd = left;
+	colour->reset = reset;
+	colour->bg = bg;
+	colour->fg = fg;
+	colour->bold = bold;
+	colour->b = bold;
+	colour->up = up;
+	colour->down = down;
+	colour->left = left;
+	colour->bwd = left;
 	
-	colour.right = right;
-	colour.fwd = right;
-	colour.clear = clear;
-	colour.cls = clear;
-	colour.nl = n;
-	colour.fixpos = fixpos;
+	colour->right = right;
+	colour->fwd = right;
+	colour->clear = clear;
+	colour->cls = clear;
+	colour->nl = nl;
+	colour->fixpos = fixpos;
 	
-	colour.fmt = fmt;
-
+	colour->fmt = fmt;
 
 	return;
 }
 
-static char* codes[256] = { NULL };
 
 static char* fmt( char* in )	{
 	
 	unsigned x = 0;
+	unsigned y = 0;
+	unsigned w = 0;
+	
 	uint8_t escaped = 0;
 	char c = 0;
 	char* out = (char*)calloc( 1024, 1 );
-	
+	uint8_t detected_seq = 0;
+	char tbuf[2];
+	tbuf[1] = '\0';
+	char _[200] = { 0 };
+
 	while( (c = in[x]) )	{
 	
-		if( c=='\\' && !escaped )
-			escaped = 1, x++, continue;
+		x++;
 		
-		if( c=='\\' && escaped )
-			escaped = 0, out[x-1] = '\\', out[x] = '\\', x++, continue;
+		if( c=='\\' && !escaped )	{
+			
+			escaped = 1;
+			continue;
+		}
+		if( c=='\\' && escaped )	{
+			
+			escaped = 0;
+			out[x-1] = '\\';
+			out[x] = '\\';
+			continue;
+		}
 		
+		char** seq;
 		
-		char** seq = (char**)calloc( 10, sizeof(char*) );
-		
-		unsigned y = 0;
 		unsigned z = 0;
 					
 		if( escaped )	{
 			
 			switch( c )	{
-				
-				case 'n':
-				
-					strcat( out, "\n" );
-					x++;
-					break;
 
 				case '[':
 					
 					strcat( out, "[" );
-					x++;
+					
+					escaped = 0;
+					continue;
 					break;
 				
 				default:
+					
+					escaped = 0;
 					break;
 			}
 			
 			escaped = 0;
 		}
-		else	{
-			
+		else if( c=='[' )	{
 
-			x++;
-			char _[200] = { 0 };
+			detected_seq = 1;
 			
+			seq = (char**)malloc( 10 * sizeof(char*) );
+			z=0;
+
 			char ch;
+			y=0;
+
 			while( (ch=in[x]) != ']' && ch!='\0' )	{
 				
 				_[y] = ch;
@@ -217,72 +299,75 @@ static char* fmt( char* in )	{
 				y++;
 			}
 			
+			if( ch==']' )
+				x++;
+			
+			_[y] = '\0';
+			
 			char* entry = (char*)calloc( 32, 1 );
 			char* entry_copy;
 			
-			y = 0;
+			w = 0;
 			
 			loop:
 			
 			entry_copy = entry;
-			while( (ch=_[y]) != ',' && ch != '\0' )
-				*entry_copy = ch, y++, entry_copy++;
+			while( (ch=_[w]) != ',' && ch != '\0' )
+				*entry_copy = ch, w++, entry_copy++;
 			
 			*entry_copy = '\0';
 			
 			seq[z] = getANSIVTSeq( entry );
 
 			z++;
-			if( ch == ',' )
-				y++, goto loop;
-			
+			if( ch == ',' )	{
+				
+				w++;
+				goto loop;
+			}
 			free( entry );
-			
 		}
-		
-		
-		
+
 		if( z>0 )	{
 			
 			unsigned n = 0;
 			// attach the seq[] array of char* control codes to the 'char* out' buffer.
 			while( n < z )
-				strcat( out, seq[n++] );
-			
-			
+				strcat( out, seq[n++] );						
 		}
 		else	{
-			
-			char* tbuf = " \0";
+
 			tbuf[0] = c;
 			strcat( out, tbuf );
 		}
-		
-		
-		x += y;
+				
+		if( detected_seq )	{
+			
+			free( seq );
+			detected_seq = 0;
+		}
 	}
+	
+	return out;
 }
 
 static const char* setcodevalues( int c, int v, ... )	{
 
-	va_arg vargs;
-	va_list vlist;
+	//va_arg vargs;
+	//va_list vlist;
 	
 	char* _ = (char*)calloc( 64, 1 );
 	
 	/*
 		Those codestrings that support user-defined values have a string-qualifier at ech location where a replacement number can be inserted.
-		The ANSI char '%'might be a good, being free as it is under the ANSI/VT specification, marker for inserting a value. SOme codepoints take
+		The ANSI char '%'might be a good, being free as it is under the ANSI/VT specification, marker for inserting a value. Some codepoints take
 		Hexadecimal, some decimal.
-		
 		Perhaps "%%" might indicate that the value is required to be Hexadecimal. Then, a single '%', "%", could indicate Decaimal.
 		Perhaps 'R', 'G', 'B'might indicate the components of an RGB colourspace.
 	*/
 	
 	return (const char*) _;
 }
-
-
 
 static const unsigned resetAnsiVtCodes(unsigned f)	{
 	
@@ -329,7 +414,7 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 	
 	else if(f == 1)	{
 		
-		strcpy((char *)FG_BLACK, "\e[30m");
+		strcpy(FG_BLACK, "\e[30m");
 		strcpy((char *)FG_RED, "\e[31m");
 		strcpy((char *)FG_GREEN, "\e[32m");
 		strcpy((char *)FG_YELLOW, "\e[33m");
@@ -367,7 +452,6 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 
 		strcpy((char *)NORMAL, "\e[0m");
 	}
-	
 	
 	unsigned x = 0;
 
@@ -433,7 +517,7 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 	if( f==0 )
 		x = 0;
 	
-	return ( ansivt = (const unsigned) x );
+	return ( (const unsigned) x );
 }
 
 static void swap4color( char * fg, char * bg )	{
@@ -582,3 +666,4 @@ static void swap4color( char * fg, char * bg )	{
 	
 	return;
 }
+

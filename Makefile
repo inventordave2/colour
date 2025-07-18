@@ -19,6 +19,6 @@ colour_d: ./colour.c ./colour.h
 all: colour colour_d colourtest
 
 clean:
-	rm *.o
+	del *.o
 	
 		
