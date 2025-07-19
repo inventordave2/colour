@@ -19,7 +19,7 @@ typedef struct Colour	{
 	const char** codes;
 
 	char* (*setcodevalues)( int c, int v, ... );
-	void (*reset)();
+	char* (*reset)();
 	void (*bg)( uint8_t cc );
 	void (*fg)( uint8_t cc );
 	void (*bold)();
@@ -34,7 +34,6 @@ typedef struct Colour	{
 	void (*clear)();
 	void (*cls)();
 	void (*nl)();
-	
 
 	void (*fixpos)(void);
 

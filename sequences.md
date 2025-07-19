@@ -46,6 +46,11 @@ the Windows default beep (but only if it's not already playing).
 		48;2;#	background based on index (0-255)
 		48;5;#;#;# background based on RGB
 		49	default background (using current intensity)
+	       106	background bright cyan
+	       107	background bright white
+
+	  Index is 0-7 for the normal colors and 8-15 for the bright; 16-231
+	  are a 6x6x6 color cube; and 232-255 are a grayscale ramp (without
 		90	foreground bright black
 		91	foreground bright red
 		92	foreground bright green
@@ -60,11 +65,6 @@ the Windows default beep (but only if it's not already playing).
 	       103	background bright yellow
 	       104	background bright blue
 	       105	background bright magenta
-	       106	background bright cyan
-	       107	background bright white
-
-	  Index is 0-7 for the normal colors and 8-15 for the bright; 16-231
-	  are a 6x6x6 color cube; and 232-255 are a grayscale ramp (without
 	  black or white).  Indices 16-255 and RGB colors will find the nearest
 	  color from the first 16.
 

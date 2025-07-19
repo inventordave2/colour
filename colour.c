@@ -5,8 +5,10 @@
 #include <string.h>
 #include <stdio.h>
 
-#if
+#ifdef _WIN32
 #include <windows.h>
+#endif
+
 #include "./colour.h"
 #define COLOUR_MAX_CODES_COUNT 256
 
@@ -60,12 +62,12 @@ char BG_BRIGHT_CYAN[8];
 char BG_BRIGHT_WHITE[8];
 
 char NORMAL[8];
+char ITALIC[8];
 
 static char** codes;
 
-
 static const unsigned resetAnsiVtCodes(unsigned f);
-static void reset();
+static char* reset();
 static void bg( uint8_t cc );
 static void fg( uint8_t cc );
 static void bold();
@@ -75,12 +77,14 @@ static void left( int d );
 static void right( int d );
 static void clear();
 static void nl();
+static void nl() { printf("\n"); }
 static void fixpos();
 
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
 
-static void reset()	{}
+static char* reset()	{ char* str = getANSIVTSeq( "reset" ); printf( str ); return str; }
+
 static void bg( uint8_t cc ) {}
 static void fg( uint8_t cc ) {}
 static void bold() {}
@@ -89,7 +93,7 @@ static void down( int h ) {}
 static void left( int d ) {}
 static void right( int d ) {}
 static void clear() {}
-static void nl() {}
+
 static void fixpos() {}
 
 
@@ -102,11 +106,12 @@ static HANDLE StdHandle;
 #ifndef STD_OUTPUT_HANDLE
 #define STD_OUTPUT_HANDLE ((DWORD)-11)
 #endif
-
+ 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
 
+#ifdef _WIN32
 static BOOL color_win32_vt;
 
 int win32_color()	{
@@ -126,6 +131,7 @@ int win32_color()	{
 
 	return (int) color_win32_vt;	
 }
+#endif
 
 static char* getANSIVTSeq( char* str )	{
 
@@ -145,19 +151,23 @@ static char* getANSIVTSeq( char* str )	{
 	
 	const char** codes = colour->codes;
 	char ch;
-	ch = str[6];
-	str[6] = '\0';
+
+	
+	int n = 6;
 	
 	if( !strcmp( prefix,"fg:" ) || (bg=(!strcmp( prefix,"bg:" ))) )
 		str += 3;
+
+	ch = str[n];
+	str[n] = '\0';
 	
 	if( !strcmp( str,"bright" ) )
-		codes += _bright_, str += 7;
-	
-	str[6] = ch;
+		codes += _bright_, str[n] = ch, str += n+1;
+	else
+		str[n] = ch;
 	
 	if( bg )
-		codes += 15;
+		codes += 16;
 	
 	if( !strcmp( str,"white" ) )
 		return (char*) codes[_white_];
@@ -182,8 +192,15 @@ static char* getANSIVTSeq( char* str )	{
 	
 	if( !strcmp( str,"black" ) )
 		return (char*) codes[_black_];
-}
 
+	int a = strlen( str );
+	char* errmsg = (char*)malloc( a+2+1 );
+	strcpy( errmsg, "[" );
+	strcat( errmsg, str );
+	strcat( errmsg, "]" );
+
+	return errmsg;
+}
 
 void InitColour()	{
 	
@@ -197,9 +214,11 @@ void InitColour()	{
 		return;
 	}
 	
+	#ifdef _WIN32
 	uint8_t r2 = (uint8_t) win32_color();
 	printf( "Win32 VT Mode was %sactivated.\n", (r2==1?"":"not ") );
-	
+	#endif
+
 	colour = (struct Colour*) malloc( sizeof( struct Colour ) );
 	
 	colour->codes = (const char**) codes;
@@ -225,7 +244,6 @@ void InitColour()	{
 
 	return;
 }
-
 
 static char* fmt( char* in )	{
 	
@@ -410,6 +428,7 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 		strcpy((char *)BG_BRIGHT_WHITE, "");
 
 		strcpy((char *)NORMAL, "");
+		strcpy((char*)ITALIC, "");
 	}
 	
 	else if(f == 1)	{
@@ -451,6 +470,8 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 		strcpy((char *)BG_BRIGHT_WHITE, "\e[107m");
 
 		strcpy((char *)NORMAL, "\e[0m");
+		strcpy((char*)ITALIC, "\e[" );
+
 	}
 	
 	unsigned x = 0;
