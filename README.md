@@ -25,4 +25,39 @@ Or, for debug symbols, not that you'll ever need them:
 Use "./path/to/colour.h" in your referencing source file, and link the colour.o or colour_d.o lib file when compiling/linking your, frankly, miraculously-improved console app.
 
 
+The currently-implemented options (colourizing, but not other formatting yet) are:
+
+black
+red
+green
+blue
+yellow
+cyan
+magenta
+white
+
+As well as their derivable forms:
+
+bright_black
+bright_red
+bright_green
+bright_blue
+bright_yellow
+bright_cyan
+bright_magenta
+bright_white
+
+And the additional options of:
+
+bg:colour_name
+fg:colour_name
+
+
+Not to mention that in any user inserted colourlib delimeters '[' and ']' (unescaped. If you want the literal printable character '[', escape it as such: \[ ) you can have comma-delimeted multiple options, for example:
+
+[bg:bright_yellow,bright_blue] ( This is the same as [bg:bright_yellow,fg:bright_blue], because the prefix "fg:" can be implicit, whereas "bg:"cannot. )
+
+My mommy calls me scoochy-woochy-mccuteface, but you can call me Dave.
+
+
 Dave.

@@ -42,10 +42,6 @@ int main( int argc, char** argv )	{
 
 			free( in );
 		}
-
-		str = colour->fmt( "[reset]" );
-		printf( str );
-		free( str );
 	}
 
 	return 0;
