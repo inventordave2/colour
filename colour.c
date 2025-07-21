@@ -216,7 +216,7 @@ void InitColour()	{
 	
 	#ifdef _WIN32
 	uint8_t r2 = (uint8_t) win32_color();
-	printf( "Win32 VT Mode was %sactivated.\n", (r2==1?"":"not ") );
+	//printf( "Win32 VT Mode was %sactivated.\n", (r2==1?"":"not ") );
 	#endif
 
 	colour = (struct Colour*) malloc( sizeof( struct Colour ) );

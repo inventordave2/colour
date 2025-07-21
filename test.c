@@ -9,39 +9,40 @@ int main( int argc, char** argv )	{
 
 	InitColour();
 	
-	char* str; // = colour->fmt( "This string should have some [green]COLOUR[blue]!!!![reset]\n" );
-	//printf( str );
-	//free( str );
+	char* str;
 	
-	str = colour->fmt( "A random [yellow]string [magenta]containing any [blue]Colour_c [magenta]string you like!" );
-	printf( str );
-	printf( "\n" );
-	free( str );
-	str = colour->fmt("[reset]");
-	printf( str );
-	printf( "\n" );
-	free( str );
+	if( argc==1 )	{
+		
+		str = colour->fmt( "A random [yellow]string [magenta]containing any [blue]Colour_c [magenta]codes you like." );
+		printf( str );
+		free( str );
+		str = colour->fmt( "[reset]" );
+		printf( str );
+		free( str );
+		printf( "\n" );
 
-	if( argc>1 )	{
+		exit(0);
+	}
 
-		char* in;
+	char* in;
+	argv++;
+
+	while( argc>1 )	{
+
+		in = strdup( *argv );
+		str = colour->fmt( in );
+		free( in );
+		
+		printf( str );
+		free( str );
+		
+		str = colour->fmt( "[reset]" );
+		printf( str );
+		free( str );
+		
+		printf( "\n" );
+		argc--;
 		argv++;
-
-		while( argc>1 )	{
-
-			in = strdup( *argv );
-			str = colour->fmt( in );
-			printf( str );
-			free( str );
-			str = colour->fmt( "[reset]" );
-			printf( str );
-			free( str );
-			printf( "\n" );
-			argc--;
-			argv++;
-
-			free( in );
-		}
 	}
 
 	return 0;
