@@ -53,7 +53,7 @@ bg:colour_name
 fg:colour_name
 
 
-Not to mention that in any user inserted colourlib delimeters '[' and ']' (unescaped. If you want the literal printable character '[', escape it as such: \[ ) you can have comma-delimeted multiple options, for example:
+Not to mention that in any user inserted colourlib delimeters '[' and ']' (unescaped. If you want the literal printable character '[', escape it as such: \\\\[ ) you can have comma-delimeted multiple options, for example:
 
 [bg:bright_yellow,bright_blue] ( This is the same as [bg:bright_yellow,fg:bright_blue], because the prefix "fg:" can be implicit, whereas "bg:"cannot. )
 
