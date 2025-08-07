@@ -5,14 +5,14 @@
 #include <string.h>
 #include <stdio.h>
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <windows.h>
 #endif
 
 #include "./colour.h"
 #define COLOUR_MAX_CODES_COUNT 256
 
-struct Colour* colour;
+struct colour_t* colour;
 
 unsigned _black_;
 unsigned _red_;
@@ -66,6 +66,8 @@ char ITALIC[8];
 
 static char** codes;
 
+static char* setCodePage( char* );
+static const char* getCodePage( );
 static const unsigned resetAnsiVtCodes(unsigned f);
 static char* reset();
 static void bg( uint8_t cc );
@@ -74,27 +76,18 @@ static void bold();
 static void up( int h );
 static void down( int h );
 static void left( int d );
+static void br();
+static void tl();
+static void leftmost();
+static void rightmost();
 static void right( int d );
 static void clear();
 static void nl();
 static void nl() { printf("\n"); }
 static void fixpos();
-
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
-
 static char* reset()	{ char* str = getANSIVTSeq( "reset" ); printf( str ); return str; }
-
-static void bg( uint8_t cc ) {}
-static void fg( uint8_t cc ) {}
-static void bold() {}
-static void up( int h ) {}
-static void down( int h ) {}
-static void left( int d ) {}
-static void right( int d ) {}
-static void clear() {}
-
-static void fixpos() {}
 
 
 /*
@@ -106,33 +99,26 @@ static HANDLE StdHandle;
 #ifndef STD_OUTPUT_HANDLE
 #define STD_OUTPUT_HANDLE ((DWORD)-11)
 #endif
- 
 #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
 #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 #endif
-
-#ifdef _WIN32
+#ifdef WIN32
 static BOOL color_win32_vt;
-
 int win32_color()	{
 
 	StdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	
 	color_win32_vt = SetConsoleMode(
 		StdHandle,
 		0x0001 | 0x0002 | ENABLE_VIRTUAL_TERMINAL_PROCESSING
 	);
 
-	
 	//fprintf( stderr, "ResponseCode(SetConsoleMode) := '%s'.\n", (color == 0 ? "FAIL" : "SUCCESS") );
-
 	if(color_win32_vt == 0)
 		fprintf( stderr, "ANSIVT mode could not be activated in this Win32 process.\n" );
 
 	return (int) color_win32_vt;	
 }
 #endif
-
 static char* getANSIVTSeq( char* str )	{
 
 	if( !strcmp( str,"reset" ) )
@@ -376,10 +362,10 @@ static const char* setcodevalues( int c, int v, ... )	{
 	char* _ = (char*)calloc( 64, 1 );
 	
 	/*
-		Those codestrings that support user-defined values have a string-qualifier at ech location where a replacement number can be inserted.
-		The ANSI char '%'might be a good, being free as it is under the ANSI/VT specification, marker for inserting a value. Some codepoints take
+		Those codestrings that support user-defined values have a string-qualifier at each location where a replacement number can be inserted.
+		The ANSI char '%'might be a good COLOUR_H internal code, being free as it is under the ANSI/VT specification, marker for inserting a value. Some codepoints take
 		Hexadecimal, some decimal.
-		Perhaps "%%" might indicate that the value is required to be Hexadecimal. Then, a single '%', "%", could indicate Decaimal.
+		Perhaps "%%" might indicate that the value is required to be Hexadecimal. Then, a single '%', "%", could indicate Decimal.
 		Perhaps 'R', 'G', 'B'might indicate the components of an RGB colourspace.
 	*/
 	
@@ -540,7 +526,7 @@ static const unsigned resetAnsiVtCodes(unsigned f)	{
 	return ( (const unsigned) x );
 }
 
-static void swap4color( char * fg, char * bg )	{
+static void swap4color( char* fg, char* bg )	{
 	
 	if( fg==NULL || strlen(fg)==0 || !strcmp(fg,"0") )
 		goto _bg;

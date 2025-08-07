@@ -6,29 +6,53 @@
 #include <stdint.h>
 /*
 The Colour Library Interface.
-
 Usage:
-
 colour->fmt( char* ); // Pass in a ColourLib-formatted string, and this member function will replace the code hints with the ANSI/VT literals.
 */
 typedef struct colour_t	{
 
-	char ansivt;
+	uint8_t colourMode;
 
 	uint8_t R;
 	uint8_t G;
 	uint8_t B;
 	uint8_t A;
-	
-	char* (*fmt)( char* in );
+	uint8_t RGBA[4];
 	const char** codes;
 
+	uint16_t NUMROWS;
+	uint16_t NUMCOLS;
+	uint16_t** screen; /* 2d (rows and columns) screen buffer */
+	uint16_t x; /* column */
+	uint16_t y; /* row    */
+	
+	uint16_t codepage; /* Such as UTF8, UCS4, ASCII, etc. */
+	uint8_t mode; /* charmode = 1, bitmapmode = 2, unverified = 0 */
+
+	char* (*fmt)( char* in );
 	char* (*setcodevalues)( int c, int v, ... );
 	char* (*reset)();
 	void (*bg)( uint8_t cc );
 	void (*fg)( uint8_t cc );
 	void (*bold)();
 	void (*b)();
+	void (*italic)();
+	void (*i)();
+	void (*underline)();
+	void (*ul)();
+	
+	void (*topleft)();
+	void (*tl)();
+	void (*bottomright)();
+	void (*br)();
+	
+	void (*bottom)();
+	void (*top)();
+	
+	void (*leftmost)();
+	void (*rightmost)();
+
+	
 	void (*up)( int h );
 	void (*down)( int h );
 	void (*left)( int d );
@@ -39,6 +63,10 @@ typedef struct colour_t	{
 	void (*clear)();
 	void (*cls)();
 	void (*nl)();
+	void (*tab)();
+	void (*ws)();
+	
+	char* (*getbuffer)( uint16_t x, uint16_t y, uint16_t length );
 
 	void (*fixpos)(void);
 
