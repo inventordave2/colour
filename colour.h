@@ -11,10 +11,15 @@ Usage:
 
 colour->fmt( char* ); // Pass in a ColourLib-formatted string, and this member function will replace the code hints with the ANSI/VT literals.
 */
-typedef struct Colour	{
+typedef struct colour_t	{
 
 	char ansivt;
 
+	uint8_t R;
+	uint8_t G;
+	uint8_t B;
+	uint8_t A;
+	
 	char* (*fmt)( char* in );
 	const char** codes;
 
@@ -37,13 +42,13 @@ typedef struct Colour	{
 
 	void (*fixpos)(void);
 
-} Colour;
+} colour_t;
 
 /*
 An instance of the Colour Library Interface.
 Initialised by InitColour().
 */
-extern struct Colour* colour;
+extern struct colour_t* colour;
 
 /*
 The only public (non-interface-wrapped) function to the Colour Library.

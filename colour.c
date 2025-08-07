@@ -162,7 +162,7 @@ static char* getANSIVTSeq( char* str )	{
 	str[n] = '\0';
 	
 	if( !strcmp( str,"bright" ) )
-		codes += _bright_, str[n] = ch, str += n+1;
+		codes += _bright_, str[n] = ch, str += n;
 	else
 		str[n] = ch;
 	
@@ -260,7 +260,7 @@ static char* fmt( char* in )	{
 	char _[200] = { 0 };
 
 	while( (c = in[x]) )	{
-	
+		
 		x++;
 		
 		if( c=='\\' && !escaped )	{
@@ -275,32 +275,30 @@ static char* fmt( char* in )	{
 			out[x] = '\\';
 			continue;
 		}
+		if( c=='\e' )	{
+			
+			out[ x-1 ] = c;
+			escaped = 1;
+			continue;
+		}
 		
 		char** seq;
 		
 		unsigned z = 0;
-					
+
+		isescaped:
+
 		if( escaped )	{
 			
-			switch( c )	{
-
-				case '[':
-					
-					strcat( out, "[" );
-					
-					escaped = 0;
-					continue;
-					break;
-				
-				default:
-					
-					escaped = 0;
-					break;
-			}
-			
+			char t[2];
+			t[0] = c;
+			t[1] = '\0';
+			strcat( out, (char*)t );
 			escaped = 0;
+			continue;
 		}
 		else if( c=='[' )	{
+
 
 			detected_seq = 1;
 			
@@ -327,7 +325,7 @@ static char* fmt( char* in )	{
 			
 			w = 0;
 			
-			loop:
+			loop: 
 			
 			entry_copy = entry;
 			while( (ch=_[w]) != ',' && ch != '\0' )
@@ -364,6 +362,7 @@ static char* fmt( char* in )	{
 			free( seq );
 			detected_seq = 0;
 		}
+
 	}
 	
 	return out;
