@@ -1,5 +1,10 @@
 // COLOUR_C
 
+#ifdef _cplusplus_
+extern C {
+#endif
+
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -12,7 +17,14 @@
 #include "./colour.h"
 #define COLOUR_MAX_CODES_COUNT 256
 
-struct colour_t* colour;
+struct ColourI* colour;
+void InitColour();
+static void InitColourI();
+
+
+static uint8_t colourlib_initialised = 0;
+
+static void InitColourI();
 
 unsigned _black_;
 unsigned _red_;
@@ -71,20 +83,34 @@ static const char* getCodePage( );
 static const unsigned resetAnsiVtCodes(unsigned f);
 static char* reset();
 static void bg( uint8_t cc );
+
+static void bg( uint8_t cc ) { (cc); return; }
+
 static void fg( uint8_t cc );
+
+static void fg( uint8_t cc ) { (cc); return; }
 static void bold();
+static void bold() { return; }
 static void up( int h );
+static void up( int h ) { (h); return; }
 static void down( int h );
+static void down( int h ) { (h); return; }
+
 static void left( int d );
+static void left( int d ) { (d); return; }
+
 static void br();
 static void tl();
 static void leftmost();
 static void rightmost();
 static void right( int d );
+static void right( int d ) { (d); return; }
 static void clear();
+static void clear() { (1); return; }
 static void nl();
 static void nl() { printf("\n"); }
 static void fixpos();
+static void fixpos() { (1); return; }
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
 static char* reset()	{ char* str = getANSIVTSeq( "reset" ); printf( str ); return str; }
@@ -188,7 +214,14 @@ static char* getANSIVTSeq( char* str )	{
 	return errmsg;
 }
 
-void InitColour()	{
+static void InitColourI()	{
+	
+	#ifdef COLOURMODE
+	#if COLOURMODE==0
+	colour = (struct ColourI*) calloc( sizeof( struct ColourI ) );
+	return;
+	#endif
+	#endif
 	
 	codes = (char**)calloc( 256, sizeof(char*) );
 	
@@ -200,15 +233,18 @@ void InitColour()	{
 		return;
 	}
 	
-	#ifdef _WIN32
+	#ifdef WIN32
 	uint8_t r2 = (uint8_t) win32_color();
-	//printf( "Win32 VT Mode was %sactivated.\n", (r2==1?"":"not ") );
+	char* msg = "%sWin32 VT Mode was %sactivated.\n";
+	char* output = (char*)malloc( strlen(msg)+15+1 );
+	
+	r2==1?sprintf( ouput, msg, "[bright_green]", "" ):sprintf( output, msg, "[bright_red]", "not " );
+	fprintf( stderr, output );
 	#endif
 
-	colour = (struct Colour*) malloc( sizeof( struct Colour ) );
+	colour = (struct ColourI*) malloc( sizeof( struct ColourI ) );
 	
 	colour->codes = (const char**) codes;
-
 	colour->reset = reset;
 	colour->bg = bg;
 	colour->fg = fg;
@@ -227,8 +263,12 @@ void InitColour()	{
 	colour->fixpos = fixpos;
 	
 	colour->fmt = fmt;
-
+	
+	
+	colour_initialised = 1;
 	return;
+	
+	#endif
 }
 
 static char* fmt( char* in )	{
@@ -673,3 +713,6 @@ static void swap4color( char* fg, char* bg )	{
 	return;
 }
 
+#ifdef _cplusplus_
+}
+#endif

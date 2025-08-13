@@ -6,6 +6,11 @@ noexe=-c
 name=colour
 target=-DWIN32
 
+test: ./testwregexgrok.c
+	make -C ./../werner_stoop_wregex/ lib
+	gcc -g -o ./ft1.exe ./testwregexgrok.c ./../werner_stoop_wregex/libwregex.a
+
+
 colourtest: ./test.c ./test.h colour_d
 	$(compiler) $(analysis) $(target) -o ./colourtest.exe ./test.c $(name)_d.o
 

@@ -9,10 +9,13 @@ The Colour Library Interface.
 Usage:
 colour->fmt( char* ); // Pass in a ColourLib-formatted string, and this member function will replace the code hints with the ANSI/VT literals.
 */
-typedef struct colour_t	{
+typedef struct ColourI	{
 
 	uint8_t colourMode;
-
+	const uint8_t codeAlign: 8; /* A fixed width for any of the control code strings.
+								With ANSIVT100, we can be sure of control substrings being of length 31 or less,
+								however	for simple usage, a length of 8 (bytes/chars unpacked) suffices. */
+	 
 	uint8_t R;
 	uint8_t G;
 	uint8_t B;
@@ -70,13 +73,13 @@ typedef struct colour_t	{
 
 	void (*fixpos)(void);
 
-} colour_t;
+} ColourI;
 
 /*
 An instance of the Colour Library Interface.
 Initialised by InitColour().
 */
-extern struct colour_t* colour;
+extern struct ColourI* colour;
 
 /*
 The only public (non-interface-wrapped) function to the Colour Library.
