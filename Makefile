@@ -1,10 +1,11 @@
 # Colour Lib Makefile
 
 compiler=gcc
-analysis=-g -DDEBUG -O0
+analysis=-g -DDEBUG -Wall -Wpedantic
+optim=-O0
 noexe=-c
 name=colour
-target=-DWIN32
+target=-D_WIN32
 
 test: ./testwregexgrok.c
 	make -C ./../werner_stoop_wregex/ lib
@@ -24,8 +25,9 @@ colour_d: ./colour.c ./colour.h
 all: colour colour_d colourtest
 
 clean:
-	del ./*.o
+	del *.o
 	
 wipe: clean
+	del *.exe
 
 	

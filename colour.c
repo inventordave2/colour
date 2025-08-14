@@ -2,29 +2,28 @@
 
 #ifdef _cplusplus_
 extern C {
-#endif
-
+#endif   
 
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
 #include "./colour.h"
 #define COLOUR_MAX_CODES_COUNT 256
 
-struct ColourI* colour;
+struct colour_t* colour;
 void InitColour();
-static void InitColourI();
+void DeInitColour();
 
 
 static uint8_t colourlib_initialised = 0;
-
 static void InitColourI();
+
 
 unsigned _black_;
 unsigned _red_;
@@ -114,6 +113,9 @@ static void fixpos() { (1); return; }
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
 static char* reset()	{ char* str = getANSIVTSeq( "reset" ); printf( str ); return str; }
+
+static char desc[] = "COLOUR_C comes to you courtesy of Inventor Dave, his primary co-hort the Emeritus Lab Assistant Mopsey Wowbagger, the historical ANSI specification committee, and an iron-clad personal commitment by Dave (that's me, but my mates call me \"The Dizzle\", so, y'know, it's only polite...) to free noobs and code-kiddies like you losers from the Atlantean shackles of technical debt. All of the important subsystems you could want to be wrapped, friction-free, in a plug-in architecture, for any C application project your puny mortal mids could possibly envisage, let alone successfully implement, across multiple target architectures (Windows, and Linux. Tbf, it's just like, those two, and that's it, but you've gotta keep the energy uo.\n(c)\tInventor Dave\n   \t1,000,000 b.c.\n\nOh, and WELCOME, TO THE WORLD OF TOMORROW!!!\n";
+
 
 
 /*
@@ -214,11 +216,19 @@ static char* getANSIVTSeq( char* str )	{
 	return errmsg;
 }
 
-static void InitColourI()	{
+void InitColour()	{
+	
+	Initcolour_t();
+	return;
+}
+
+
+static void InitColour()	{
 	
 	#ifdef COLOURMODE
+
 	#if COLOURMODE==0
-	colour = (struct ColourI*) calloc( sizeof( struct ColourI ) );
+	colour = (struct colour_t*) calloc( sizeof( struct colour_t ) );
 	return;
 	#endif
 	#endif
@@ -232,18 +242,19 @@ static void InitColourI()	{
 		fprintf( stderr, "The Colour Library was unable to initialise the ANSI VT code table!\n" );
 		return;
 	}
-	
+
+	char* msg = "%sWin32 VT Mode was %sactivated.\n";
+	char* output = (char*)malloc( strlen(msg)+15+1 );	
 	#ifdef WIN32
 	uint8_t r2 = (uint8_t) win32_color();
-	char* msg = "%sWin32 VT Mode was %sactivated.\n";
-	char* output = (char*)malloc( strlen(msg)+15+1 );
+	r2==1?sprintf( output, msg, "[brightgreen]", "" ):sprintf( output, msg, "[brightred]", "not " );
 	
-	r2==1?sprintf( ouput, msg, "[bright_green]", "" ):sprintf( output, msg, "[bright_red]", "not " );
-	fprintf( stderr, output );
+	
 	#endif
 
-	colour = (struct ColourI*) malloc( sizeof( struct ColourI ) );
+	colour = (struct colour_t*) calloc( 1, sizeof( struct colour_t ) );
 	
+	colour->desc = (const char*)desc;
 	colour->codes = (const char**) codes;
 	colour->reset = reset;
 	colour->bg = bg;
@@ -264,11 +275,14 @@ static void InitColourI()	{
 	
 	colour->fmt = fmt;
 	
-	
-	colour_initialised = 1;
-	return;
-	
+	#ifdef _WIN32
+	fprintf( stderr, colour->fmt(output) );
 	#endif
+
+	free( output );
+	colourlib_initialised = 1;
+	return;
+
 }
 
 static char* fmt( char* in )	{
@@ -716,3 +730,4 @@ static void swap4color( char* fg, char* bg )	{
 #ifdef _cplusplus_
 }
 #endif
+

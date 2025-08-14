@@ -25,7 +25,7 @@ Or, for debug symbols, not that you'll ever need them:
 Use "./path/to/colour.h" in your referencing source file, and link the colour.o or colour_d.o lib file when compiling/linking your, frankly, miraculously-improved console app.
 
 
-The currently-implemented options (colourizing, but not other formatting yet) are:
+The currently-implemented options (colour_tzing, but not other formatting yet) are:
 
 black
 red
