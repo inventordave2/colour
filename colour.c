@@ -2,6 +2,7 @@
 
 #ifdef _cplusplus_
 extern C {
+
 #endif   
 
 #include <stdlib.h>
@@ -13,7 +14,10 @@ extern C {
 #include <windows.h>
 #endif
 
+#include "./ansivt100.h"
 #include "./colour.h"
+#include "./schemes.h"
+
 #define COLOUR_MAX_CODES_COUNT 256
 
 struct colour_t* colour;
@@ -83,39 +87,147 @@ static const unsigned resetAnsiVtCodes(unsigned f);
 static char* reset();
 static void bg( uint8_t cc );
 
-static void bg( uint8_t cc ) { (cc); return; }
+static void bg( uint8_t cc ) { return; }
 
 static void fg( uint8_t cc );
 
-static void fg( uint8_t cc ) { (cc); return; }
+static void fg( uint8_t cc ) { return; }
 static void bold();
 static void bold() { return; }
 static void up( int h );
-static void up( int h ) { (h); return; }
+static void up( int h ) { return; }
 static void down( int h );
-static void down( int h ) { (h); return; }
+static void down( int h ) { return; }
 
 static void left( int d );
-static void left( int d ) { (d); return; }
+static void left( int d ) { return; }
 
 static void br();
 static void tl();
 static void leftmost();
 static void rightmost();
 static void right( int d );
-static void right( int d ) { (d); return; }
+static void right( int d ) { return; }
 static void clear();
-static void clear() { (1); return; }
+static void clear() { return; }
 static void nl();
 static void nl() { printf("\n"); }
 static void fixpos();
-static void fixpos() { (1); return; }
+static void fixpos() { return; }
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
 static char* reset()	{ char* str = getANSIVTSeq( "reset" ); printf( str ); return str; }
+static char* wrap( char*, char* cc );
 
-static char desc[] = "COLOUR_C comes to you courtesy of Inventor Dave, his primary co-hort the Emeritus Lab Assistant Mopsey Wowbagger, the historical ANSI specification committee, and an iron-clad personal commitment by Dave (that's me, but my mates call me \"The Dizzle\", so, y'know, it's only polite...) to free noobs and code-kiddies like you losers from the Atlantean shackles of technical debt. All of the important subsystems you could want to be wrapped, friction-free, in a plug-in architecture, for any C application project your puny mortal mids could possibly envisage, let alone successfully implement, across multiple target architectures (Windows, and Linux. Tbf, it's just like, those two, and that's it, but you've gotta keep the energy uo.\n(c)\tInventor Dave\n   \t1,000,000 b.c.\n\nOh, and WELCOME, TO THE WORLD OF TOMORROW!!!\n";
+static char* wrap( char* str, char* opt )	{
+	
+	int strlen_str = strlen(str);
+	int len;
+	char* _;
+	
+	#include <string.h>
+	if( !strcmp(opt,RAINBOW) )	{
+		
+		// Rainbow mode.
+		len = strlen_str + (16*strlen_str ) + 1;
+		_ = (char*)malloc( len+1 );
+		_[0] = 0;
+		char* cstr = (char*)calloc( 2,1 );
 
+		int x = 0;
+		while( x<strlen_str )	{
+			
+			opt = (char*)calloc( 32, 1 );
+			selectRandomColourString( opt );
+
+			cstr[0] = str[x++];
+			
+;
+			strcat( _, "[" );
+			strcat( _, opt );
+			strcat( _, "]" );
+			strcat( _, cstr );
+			//strcat( _, "[reset]" );
+
+			free( opt );
+		}
+		
+	}
+	else	{
+		
+		len = strlen_str+strlen(opt)+strlen("[reset]")+2;
+		_ = (char*)malloc( len+1 );
+		_[0] = 0;
+
+		strcat( _, "[" );
+		strcat( _, opt );
+		strcat( _, "]" );
+		strcat( _, str );
+		strcat( _, "[reset]" );
+
+	}
+
+	return _;
+}
+
+char* fnc;
+char* ob;
+char* cb;
+char* eqs;
+char* space;
+
+char* LVALNUMBER;
+char* RVALNUMBER;
+char* FNCNAME;
+char* ROUNDBRACKET;
+char* EQUALSOPERATOR;
+char* NBWS;
+
+char* RAINBOW;
+
+char* LVALUE;
+char* RVALUE;
+char* FN;
+char* OB;
+char* CB;
+char* EQS;
+char* SPACE;
+
+char* gaza;
+char* GAZA;
+
+static char desc[] = "COLOUR_C comes to you courtesy of Inventor Dave, his primary co-hort the Emeritus Lab Assistant Mopsey Wowbagger, the historical ANSI specification committee, and an iron-clad personal commitment by Dave (that's me, but my mates call me \"The Dizzle\", so, y'know, it's only polite...) to free noobs and code-kiddies like you losers from the Atlantean shackles of technical debt. All of the important subsystems you could want to be wrapped, friction-free, in a plug-in architecture, for any C application project your puny mortal minds could possibly envisage, let alone successfully implement, across multiple target architectures (Windows, and Linux. Tbf, it's just like, those two, and that's it, but you've gotta keep the energy up).\n(c)\tInventor Dave\n   \t1,000,000 b.c.\n\nOh, and WELCOME, TO THE WORLD OF TOMORROW!!!\n";
+
+void initTagSchema()	{
+
+	 fnc = strdup( "SQROOT" );
+	 ob = strdup( "(" );
+	 cb = strdup( ")" );
+	 eqs = strdup( "=" );
+	space = strdup( " " );
+
+	 LVALNUMBER = strdup( "brightgreen" );
+	 RVALNUMBER = strdup( "brightyellow" );
+	 FNCNAME = strdup( "brightmagenta" );
+	 ROUNDBRACKET = strdup( "brightcyan" );
+	 EQUALSOPERATOR = strdup( "brightred" );
+	 NBWS = strdup( "reset" );
+
+	 RAINBOW = strdup( "rainbow" );
+
+	// LVALUE = colour->wrap( result_string, LVALNUMBER );
+	// RVALUE = colour->wrap( result_string, RVALNUMBER );
+	 FN = colour->wrap( fnc, FNCNAME );
+	 OB = colour->wrap( ob, ROUNDBRACKET );
+	 CB = colour->wrap( cb, ROUNDBRACKET );
+	 EQS = colour->wrap( eqs, EQUALSOPERATOR );
+	 SPACE = colour->wrap( space, NBWS );
+
+	 gaza = strdup( "MakeGazaANewLasVegas" );
+	 GAZA = colour->wrap( gaza, RAINBOW );
+
+	return;
+}
 
 
 /*
@@ -159,8 +271,6 @@ static char* getANSIVTSeq( char* str )	{
 	
 	prefix[3] = '\0';
 	
-	uint8_t fb = 0;
-	uint8_t f = 0;
 	uint8_t bg = 0;
 	
 	const char** codes = colour->codes;
@@ -207,23 +317,31 @@ static char* getANSIVTSeq( char* str )	{
 	if( !strcmp( str,"black" ) )
 		return (char*) codes[_black_];
 
-	int a = strlen( str );
-	char* errmsg = (char*)malloc( a+2+1 );
-	strcpy( errmsg, "[" );
-	strcat( errmsg, str );
-	strcat( errmsg, "]" );
+	char* vt100_result = getColourCode( str );
+	
+	if( !strcmp( vt100_result,"" ) )	{
+		
+		int a = strlen( str );
+		char* errmsg = (char*)malloc( a+2+1 );
+		strcpy( errmsg, "[" );
+		strcat( errmsg, str );
+		strcat( errmsg, "]" );
 
-	return errmsg;
+		return errmsg;
+	}
+	
+	return vt100_result;
 }
 
 void InitColour()	{
 	
-	Initcolour_t();
+	InitColourI();
+	
+	initTagSchema();
 	return;
 }
 
-
-static void InitColour()	{
+static void InitColourI()	{
 	
 	#ifdef COLOURMODE
 
@@ -244,18 +362,23 @@ static void InitColour()	{
 	}
 
 	char* msg = "%sWin32 VT Mode was %sactivated.\n";
-	char* output = (char*)malloc( strlen(msg)+15+1 );	
-	#ifdef WIN32
+	char* output = (char*)malloc( strlen(msg)+64+1 );	
+	
+	#ifdef _WIN32
 	uint8_t r2 = (uint8_t) win32_color();
-	r2==1?sprintf( output, msg, "[brightgreen]", "" ):sprintf( output, msg, "[brightred]", "not " );
-	
-	
+
+	if( r2 == 1 )
+		sprintf( output, msg, "[brightyellow]", "[brightgreen]" );
+	else
+		sprintf( output, msg, "[brightyellow]", "[brightred]not " );
+
 	#endif
 
 	colour = (struct colour_t*) calloc( 1, sizeof( struct colour_t ) );
+	colour->codes = (const char**) codes; // This needs to be before any call to colour_c fmt(...)
+
 	
 	colour->desc = (const char*)desc;
-	colour->codes = (const char**) codes;
 	colour->reset = reset;
 	colour->bg = bg;
 	colour->fg = fg;
@@ -274,15 +397,20 @@ static void InitColour()	{
 	colour->fixpos = fixpos;
 	
 	colour->fmt = fmt;
+	colour->wrap = wrap;
 	
+	colour->resetAnsiVtCodes = resetAnsiVtCodes;
+
 	#ifdef _WIN32
-	fprintf( stderr, colour->fmt(output) );
+	char* formatted_output = fmt( output );
+	printf( formatted_output );
+	free( formatted_output );
 	#endif
 
 	free( output );
+
 	colourlib_initialised = 1;
 	return;
-
 }
 
 static char* fmt( char* in )	{
@@ -325,8 +453,6 @@ static char* fmt( char* in )	{
 		char** seq;
 		
 		unsigned z = 0;
-
-		isescaped:
 
 		if( escaped )	{
 			
@@ -373,6 +499,19 @@ static char* fmt( char* in )	{
 			
 			*entry_copy = '\0';
 			
+			if( !strcmp( entry,"rainbow" ) )	{
+				
+				in += strlen( "[rainbow]" );
+				free( out );
+				out = wrap( in,"rainbow" );
+				char* outf = fmt( out );
+				free( out );
+				return outf;
+			}
+			
+			if( !strcmp( entry,"random" ) )
+				selectRandomColourString( entry );
+				
 			seq[z] = getANSIVTSeq( entry );
 
 			z++;

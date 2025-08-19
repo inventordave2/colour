@@ -4,6 +4,7 @@
 #define DAVELIB_COLOUR
 
 #include <stdint.h>
+
 /*
 The Colour Library Interface.
 Usage:
@@ -15,15 +16,18 @@ typedef struct colour_t	{
 
 	uint8_t colourMode;
 	const uint8_t codeAlign: 8; /* A fixed width for any of the control code strings.
-								With ANSIVT100, we can be sure of control substrings being of length 31 (bytes) or less,
+								With ANSIVT100, we can be sure of control substrings being of length 
+								(bytes) or less,
 								however	for simple usage, a length of 8 (bytes/chars unpacked) suffices. */
-	 
+
 	uint8_t R;
 	uint8_t G;
 	uint8_t B;
 	uint8_t A;
 	uint8_t RGBA[4];
 	const char** codes;
+	
+	const unsigned (*resetAnsiVtCodes)(unsigned f);
 
 	uint16_t NUMROWS;
 	uint16_t NUMCOLS;
@@ -34,6 +38,7 @@ typedef struct colour_t	{
 	uint16_t codepage; /* Such as UTF8, UCS4, ASCII, etc. */
 	uint8_t mode; /* charmode = 1, bitmapmode = 2, unverified = 0 */
 
+	char* (*wrap)( char*, char* cc );
 	char* (*fmt)( char* in );
 	char* (*setcodevalues)( int c, int v, ... );
 	char* (*reset)();
@@ -88,7 +93,7 @@ The only public (non-interface-wrapped) function to the Colour Library.
 Must be called before the Colour Interface can be used, as the Init function initialises the Library runtime requirements.
 */
 extern void InitColour();
-
+extern void DeInitColour();
 /*
 These are global copies of the strings representing the ANSI/VT control code sequences.
 Populated after InitColor() has been called, and optionally accessible as globals,

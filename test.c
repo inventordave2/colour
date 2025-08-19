@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "./colour.h"
+#include "./schemes.h"
 
 int main( int argc, char** argv )	{
 
@@ -11,6 +12,9 @@ int main( int argc, char** argv )	{
 	
 	char* str;
 	
+	//printf( GAZA );
+	printf( "\n" );
+
 	if( argc==1 )	{
 		
 		str = colour->fmt( "A random [yellow]string [magenta]containing any [blue]Colour_c [magenta]codes you like." );

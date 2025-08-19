@@ -7,6 +7,9 @@
 #include <objbase.h>
 #endif
 
+#include "./windowing_test.h"
+
+
 // Window structure
 typedef struct {
     SDL_Window *window;
