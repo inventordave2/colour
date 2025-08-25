@@ -12,7 +12,9 @@ int main( int argc, char** argv )	{
 	
 	char* str;
 	
-	//printf( GAZA );
+	char* temp;
+	printf( (temp=colour->fmt( GAZA )) );
+	free( temp );
 	printf( "\n" );
 
 	if( argc==1 )	{

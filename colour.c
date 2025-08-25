@@ -20,7 +20,7 @@ extern C {
 
 #define COLOUR_MAX_CODES_COUNT 256
 
-struct colour_t* colour;
+struct Colour* colour;
 void InitColour();
 void DeInitColour();
 
@@ -40,44 +40,55 @@ unsigned _white_;
 unsigned _bright_;
 unsigned _reset_;
 
-char FG_BLACK[8];
-char FG_RED[8];
-char FG_GREEN[8];
-char FG_YELLOW[8];
-char FG_BLUE[8];
-char FG_MAGENTA[8];
-char FG_CYAN[8];
-char FG_WHITE[8];
+char* FG_BLACK;
+char* FG_RED;
+char* FG_GREEN;
+char* FG_YELLOW;
+char* FG_BLUE;
+char* FG_MAGENTA;
+char* FG_CYAN;
+char* FG_WHITE;
 
-char FG_BRIGHT_BLACK[8];
-char FG_BRIGHT_RED[8];
-char FG_BRIGHT_GREEN[8];
-char FG_BRIGHT_YELLOW[8];
-char FG_BRIGHT_BLUE[8];
-char FG_BRIGHT_MAGENTA[8];
-char FG_BRIGHT_CYAN[8];
-char FG_BRIGHT_WHITE[8];
+char* FG_BRIGHT_BLACK;
+char* FG_BRIGHT_RED;
+char* FG_BRIGHT_GREEN;
+char* FG_BRIGHT_YELLOW;
+char* FG_BRIGHT_BLUE;
+char* FG_BRIGHT_MAGENTA;
+char* FG_BRIGHT_CYAN;
+char* FG_BRIGHT_WHITE;
 
-char BG_BLACK[8];
-char BG_RED[8];
-char BG_GREEN[8];
-char BG_YELLOW[8];
-char BG_BLUE[8];
-char BG_MAGENTA[8];
-char BG_CYAN[8];
-char BG_WHITE[8];
+char* BG_BLACK;
+char* BG_RED;
+char* BG_GREEN;
+char* BG_YELLOW;
+char* BG_BLUE;
+char* BG_MAGENTA;
+char* BG_CYAN;
+char* BG_WHITE;
 
-char BG_BRIGHT_BLACK[8];
-char BG_BRIGHT_RED[8];
-char BG_BRIGHT_GREEN[8];
-char BG_BRIGHT_YELLOW[8];
-char BG_BRIGHT_BLUE[8];
-char BG_BRIGHT_MAGENTA[8];
-char BG_BRIGHT_CYAN[8];
-char BG_BRIGHT_WHITE[8];
+char* BG_BRIGHT_BLACK;
+char* BG_BRIGHT_RED;
+char* BG_BRIGHT_GREEN;
+char* BG_BRIGHT_YELLOW;
+char* BG_BRIGHT_BLUE;
+char* BG_BRIGHT_MAGENTA;
+char* BG_BRIGHT_CYAN;
+char* BG_BRIGHT_WHITE;
 
-char NORMAL[8];
-char ITALIC[8];
+char* NORMAL;
+
+char* BOLD;
+char* ITALIC;
+char* UNDERLINE;
+char* STRIKETHROUGH;
+
+char* COLOUR; // Allows a palette of 256 colours, 0 to 255.
+char* RGB_FG;
+char* RGB_BG;
+
+char* DEL;
+
 
 static char** codes;
 
@@ -85,35 +96,19 @@ static char* setCodePage( char* );
 static const char* getCodePage( );
 static const unsigned resetAnsiVtCodes(unsigned f);
 static char* reset();
-static void bg( uint8_t cc );
 
+static int print( char* );
+
+
+static void bg( uint8_t cc );
 static void bg( uint8_t cc ) { return; }
 
 static void fg( uint8_t cc );
-
 static void fg( uint8_t cc ) { return; }
+
 static void bold();
 static void bold() { return; }
-static void up( int h );
-static void up( int h ) { return; }
-static void down( int h );
-static void down( int h ) { return; }
 
-static void left( int d );
-static void left( int d ) { return; }
-
-static void br();
-static void tl();
-static void leftmost();
-static void rightmost();
-static void right( int d );
-static void right( int d ) { return; }
-static void clear();
-static void clear() { return; }
-static void nl();
-static void nl() { printf("\n"); }
-static void fixpos();
-static void fixpos() { return; }
 static char* fmt( char* in );
 static char* getANSIVTSeq( char* str );
 static char* reset()	{ char* str = getANSIVTSeq( "reset" ); printf( str ); return str; }
@@ -229,7 +224,6 @@ void initTagSchema()	{
 	return;
 }
 
-
 /*
 Some Windows configs require a manual invocation of VT processing.
 */
@@ -342,17 +336,65 @@ void InitColour()	{
 }
 
 static void InitColourI()	{
-	
-	#ifdef COLOURMODE
 
-	#if COLOURMODE==0
-	colour = (struct colour_t*) calloc( sizeof( struct colour_t ) );
-	return;
+	#ifdef COLOURMODE
+		#if COLOURMODE==0
+			colour = (struct Colour*) calloc( sizeof( struct Colour ) );
+			return;
+		#endif
 	#endif
-	#endif
-	
+
 	codes = (char**)calloc( 256, sizeof(char*) );
-	
+
+	FG_BLACK = calloc( 32,1 );
+	FG_RED = calloc( 32,1 );
+	FG_GREEN = calloc( 32,1 );
+	FG_YELLOW = calloc( 32,1 );
+	FG_BLUE = calloc( 32,1 );
+	FG_MAGENTA = calloc( 32,1 );
+	FG_CYAN = calloc( 32,1 );
+	FG_WHITE = calloc( 32,1 );
+
+	FG_BRIGHT_BLACK = calloc( 32,1 );
+	FG_BRIGHT_RED = calloc( 32,1 );
+	FG_BRIGHT_GREEN = calloc( 32,1 );
+	FG_BRIGHT_YELLOW = calloc( 32,1 );
+	FG_BRIGHT_BLUE = calloc( 32,1 );
+	FG_BRIGHT_MAGENTA = calloc( 32,1 );
+	FG_BRIGHT_CYAN = calloc( 32,1 );
+	FG_BRIGHT_WHITE = calloc( 32,1 );
+
+	BG_BLACK = calloc( 32,1 );
+	BG_RED = calloc( 32,1 );
+	BG_GREEN = calloc( 32,1 );
+	BG_YELLOW = calloc( 32,1 );
+	BG_BLUE = calloc( 32,1 );
+	BG_MAGENTA = calloc( 32,1 );
+	BG_CYAN = calloc( 32,1 );
+	BG_WHITE = calloc( 32,1 );
+
+	BG_BRIGHT_BLACK = calloc( 32,1 );
+	BG_BRIGHT_RED = calloc( 32,1 );
+	BG_BRIGHT_GREEN = calloc( 32,1 );
+	BG_BRIGHT_YELLOW = calloc( 32,1 );
+	BG_BRIGHT_BLUE = calloc( 32,1 );
+	BG_BRIGHT_MAGENTA = calloc( 32,1 );
+	BG_BRIGHT_CYAN = calloc( 32,1 );
+	BG_BRIGHT_WHITE = calloc( 32,1 );
+
+	NORMAL = calloc( 32,1 );
+
+	BOLD = calloc( 32,1 );
+	ITALIC = calloc( 32,1 );
+	UNDERLINE = calloc( 32,1 );
+	STRIKETHROUGH = calloc( 32,1 );
+
+	COLOUR = calloc( 32,1 ); // Allows a palette of 256 colours, 0 to 255.
+	RGB_FG = calloc( 32,1 );
+	RGB_BG = calloc( 32,1 );
+
+	DEL = calloc( 32,1 );
+
 	const unsigned r = resetAnsiVtCodes( 1 );
 	
 	if( r==0 )	{
@@ -367,47 +409,42 @@ static void InitColourI()	{
 	#ifdef _WIN32
 	uint8_t r2 = (uint8_t) win32_color();
 
-	if( r2 == 1 )
-		sprintf( output, msg, "[brightyellow]", "[brightgreen]" );
-	else
-		sprintf( output, msg, "[brightyellow]", "[brightred]not " );
-
+		/*
+		if( r2 == 1 )
+			sprintf( output, msg, "[brightyellow]", "[brightgreen]" );
+		else
+			sprintf( output, msg, "[brightyellow]", "[brightred]not " );
+		*/
+	
 	#endif
 
-	colour = (struct colour_t*) calloc( 1, sizeof( struct colour_t ) );
+	colour = (struct Colour*) calloc( 1, sizeof( struct Colour ) );
 	colour->codes = (const char**) codes; // This needs to be before any call to colour_c fmt(...)
 
-	
+
 	colour->desc = (const char*)desc;
 	colour->reset = reset;
 	colour->bg = bg;
 	colour->fg = fg;
 	colour->bold = bold;
 	colour->b = bold;
-	colour->up = up;
-	colour->down = down;
-	colour->left = left;
-	colour->bwd = left;
-	
-	colour->right = right;
-	colour->fwd = right;
-	colour->clear = clear;
-	colour->cls = clear;
-	colour->nl = nl;
-	colour->fixpos = fixpos;
-	
+
 	colour->fmt = fmt;
 	colour->wrap = wrap;
-	
+	colour->print = print;
+
 	colour->resetAnsiVtCodes = resetAnsiVtCodes;
 
 	#ifdef _WIN32
-	char* formatted_output = fmt( output );
-	printf( formatted_output );
-	free( formatted_output );
+	//char* formatted_output = fmt( output );
+	//printf( formatted_output );
+	//free( formatted_output );
+	;
 	#endif
 
 	free( output );
+	
+
 
 	colourlib_initialised = 1;
 	return;
@@ -545,6 +582,22 @@ static char* fmt( char* in )	{
 	}
 	
 	return out;
+}
+
+static int print( char* str )	{
+
+	if( str==NULL )
+		return 0;
+
+	char* _ = fmt( str );
+
+	if( _==NULL )
+		return 0;
+
+	printf( _ );
+	free( _ );
+
+	return 1;
 }
 
 static const char* setcodevalues( int c, int v, ... )	{
